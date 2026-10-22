@@ -12,13 +12,10 @@
             font-family: "Courier New", monospace;
             margin: 0;
             padding: 20px;
-
-            /* CRT EFFECT */
             position: relative;
             overflow: hidden;
         }
 
-        /* CRT Scanlines */
         body::before {
             content: "";
             position: fixed;
@@ -34,7 +31,6 @@
             z-index: 9998;
         }
 
-        /* CRT Glow */
         body::after {
             content: "";
             position: fixed;
@@ -109,7 +105,7 @@
     <input id="command-input" type="text" autocomplete="off">
 </div>
 
-<!-- FULLSCREEN LIGHTBOX -->
+<!-- LIGHTBOX -->
 <div id="lightbox" style="
     position: fixed;
     inset: 0;
@@ -147,6 +143,10 @@ const inputLine = document.getElementById("input-line");
 let bootStage = 0;
 let awaitingUnstableConfirm = false;
 
+// Command history
+let history = [];
+let historyIndex = -1;
+
 function printLine(text = "") {
     const div = document.createElement("div");
     div.className = "line";
@@ -155,24 +155,17 @@ function printLine(text = "") {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
-/* ============================
-   RUBYOS PIXEL ART LOGO (BIG + TOP)
-   ============================ */
+/* RubyOS Logo */
 const rubyLogo = document.createElement("img");
 rubyLogo.src = "../assets/pictures/gallery/console/rubyos.png";
-
-/* MAKE IT BIGGER */
-rubyLogo.style.maxWidth = "600px";   // ← adjust size here
+rubyLogo.style.maxWidth = "600px";
 rubyLogo.style.width = "100%";
 rubyLogo.style.display = "block";
 rubyLogo.style.margin = "0 auto 40px auto";
 rubyLogo.style.cursor = "pointer";
-
-
-
-/* Insert BEFORE boot text */
 consoleEl.appendChild(rubyLogo);
 
+/* Boot Sequence */
 function bootSequence() {
     printLine("RubyOS Bootloader v1.0");
     setTimeout(() => printLine("Initializing kernel..."), 600);
@@ -191,6 +184,7 @@ function loginSequence() {
     inputEl.focus();
 }
 
+/* Commands */
 function showHelp() {
     printLine("Available commands:");
     printLine("  help");
@@ -204,53 +198,34 @@ function showHelp() {
 
 function showDemos() {
     printLine("Available Web Demos:");
-    printLine("  amy        - playable (no mobile controls)");
-    printLine("  honk       - playable (mobile controls built-in)");
-    printLine("  stickman   - playable (mobile controls built-in)");
-    printLine("  chicken    - playable (controller support)");
-    printLine("  unstable   - playable (no mobile controls)");
+    printLine("  amy");
+    printLine("  honk");
+    printLine("  stickman");
+    printLine("  chicken");
+    printLine("  unstable");
     printLine("");
 }
 
+/* GameJolt Launch */
 function launchDemo(name) {
-    let path = "";
+    const links = {
+        amy: "https://gamejolt.com/games/Normal-fangame/1068271",
+        honk: "https://gamejolt.com/games/goose-virus/1102641",
+        stickman: "https://gamejolt.com/games/Stickgb/1092767",
+        chicken: "https://gamejolt.com/games/n64-cartrige-cs64-play/1086515",
+        unstable: "https://gamejolt.com/games/sega-archives-1999/1108110"
+    };
 
-    switch (name) {
-        case "amy":
-            printLine("Launching Amy’s Epic Adventure...");
-            printLine("Note: No mobile controls.");
-            path = "web-demos/amy-game/index.html";
-            break;
-
-        case "chicken":
-            printLine("Launching Chicken Shooter 64...");
-            printLine("Controller support detected.");
-            path = "web-demos/chicken-game/index.html";
-            break;
-
-        case "honk":
-            printLine("Launching Unexpected Honk...");
-            printLine("Mobile controls enabled.");
-            path = "web-demos/honk-game/index.html";
-            break;
-
-        case "stickman":
-            printLine("Launching Stickman Adventure...");
-            printLine("Mobile controls enabled.");
-            path = "web-demos/stickman-game/index.html";
-            break;
-
-        case "unstable":
-            return;
-
-        default:
-            printLine("Unknown demo: " + name);
-            return;
+    if (!links[name]) {
+        printLine("Unknown demo: " + name);
+        return;
     }
 
-    window.location.href = path;
+    printLine("Launching " + name + "...");
+    window.location.href = links[name];
 }
 
+/* Unstable Confirm */
 function handleUnstable() {
     awaitingUnstableConfirm = true;
 
@@ -265,6 +240,7 @@ function handleUnstable() {
     printLine("Do you want to continue? (yes/no)");
 }
 
+/* Unstable Info */
 function unstableInfo() {
     printLine("Sega-1999 Test Cartridge [NOT FOR SALE]");
     printLine("Recovered internal Sega prototype starring Tails Doll.");
@@ -277,6 +253,7 @@ function unstableInfo() {
     printLine("");
 }
 
+/* Unstable Percentage */
 function showUnstablePercentage() {
     printLine("Analyzing recovered prototype data…");
     printLine("");
@@ -284,9 +261,7 @@ function showUnstablePercentage() {
     printLine("");
 }
 
-/* ============================
-   UNSTABLE GALLERY (FULLSCREEN)
-   ============================ */
+/* Gallery */
 function showUnstableGallery() {
     printLine("Loading Sega Archives 1999 gallery...");
     printLine("");
@@ -329,9 +304,7 @@ function showUnstableGallery() {
     printLine("Gallery loaded.");
 }
 
-/* ============================
-   LIGHTBOX CLOSE LOGIC
-   ============================ */
+/* Lightbox */
 const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightbox-image");
 const lightboxClose = document.getElementById("lightbox-close");
@@ -348,9 +321,7 @@ lightbox.addEventListener("click", (event) => {
     }
 });
 
-/* ============================
-   COMMAND HANDLER
-   ============================ */
+/* Command Handler */
 function handleCommand(cmdRaw) {
     const cmd = cmdRaw.trim().toLowerCase();
 
@@ -358,7 +329,7 @@ function handleCommand(cmdRaw) {
         if (cmd === "yes") {
             awaitingUnstableConfirm = false;
             printLine("Loading Sega Archives 1999 prototype...");
-            window.location.href = "web-demos/unstable-game/index.html";
+            window.location.href = "https://gamejolt.com/games/sega-archives-1999/1108110";
         } else if (cmd === "no") {
             awaitingUnstableConfirm = false;
             printLine("Prototype launch cancelled.");
@@ -402,6 +373,7 @@ function handleCommand(cmdRaw) {
     }
 }
 
+/* Input + Command History */
 inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         const value = inputEl.value;
@@ -425,8 +397,28 @@ inputEl.addEventListener("keydown", (e) => {
         }
 
         printLine("ruby@RubyOS:~$ " + value);
+
+        history.push(value);
+        historyIndex = history.length;
+
         handleCommand(value);
         inputEl.value = "";
+    }
+
+    if (e.key === "ArrowUp") {
+        if (historyIndex > 0) {
+            historyIndex--;
+            inputEl.value = history[historyIndex];
+        }
+    }
+
+    if (e.key === "ArrowDown") {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            inputEl.value = history[historyIndex];
+        } else {
+            inputEl.value = "";
+        }
     }
 });
 
@@ -438,5 +430,7 @@ bootSequence();
 </script>
 
 </body>
+</html>
+
 </html>
 

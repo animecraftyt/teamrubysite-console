@@ -429,6 +429,16 @@ document.body.addEventListener("touchstart", () => {
 bootSequence();
 </script>
 
+<script>
+    const allowedReferrer = "https://animecraftyt.github.io/teamrubysite/";
+
+    // Check if they came from your main site
+    if (!document.referrer.startsWith(allowedReferrer)) {
+        // If not, redirect them away
+        window.location.href = "https://www.youtube.com/watch?v=Bknw-sXf9vg";
+    }
+</script>
+
 </body>
 </html>
 
